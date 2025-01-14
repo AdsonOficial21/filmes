@@ -1,0 +1,355 @@
+<html><head><base href="." /><title>CineStream - Seu Portal de Filmes</title><style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  body {
+    background: #141414;
+    color: #fff;
+  }
+
+  .header {
+    background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(20,20,20,0.4) 100%);
+    padding: 1.2rem;
+    position: fixed;
+    width: 100%;
+    z-index: 100;
+    transition: background 0.3s ease;
+  }
+
+  .header.scrolled {
+    background: #141414;
+  }
+
+  .header h1 {
+    text-align: left;
+    color: #e50914;
+    font-size: 2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-left: 2rem;
+  }
+
+  .search-container {
+    max-width: 600px;
+    margin: 7rem auto 2rem;
+    padding: 0 1rem;
+    position: relative;
+  }
+
+  .search-container input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border-radius: 4px;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .search-container input:focus {
+    background: rgba(255,255,255,0.2);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(229,9,20,0.5);
+  }
+
+  .movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2.5rem;
+    padding: 2rem 4rem;
+  }
+
+  .movie-card {
+    background: #2a2a2a;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  }
+
+  .movie-card:hover, .movie-card:focus {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+    outline: 3px solid #e50914;
+  }
+
+  .movie-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    transition: all 0.3s ease;
+  }
+
+  .movie-info {
+    padding: 1.2rem;
+    background: linear-gradient(180deg, rgba(42,42,42,0.9) 0%, #2a2a2a 100%);
+  }
+
+  .movie-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .movie-meta {
+    font-size: 0.9rem;
+    color: #b3b3b3;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 900px;
+    margin: 3rem auto;
+    background: #181818;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+
+  .close-modal {
+    position: absolute;
+    right: 1.5rem;
+    top: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.8rem;
+    transition: color 0.3s ease;
+  }
+
+  .close-modal:hover, .close-modal:focus {
+    color: #e50914;
+    outline: none;
+  }
+
+  .embed-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    margin-top: 1.5rem;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .embed-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  #modalTitle {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #fff;
+    margin-right: 3rem;
+  }
+
+  @media (max-width: 768px) {
+    .movies-grid {
+      padding: 1rem;
+      gap: 1rem;
+    }
+    
+    .header h1 {
+      font-size: 1.5rem;
+      margin-left: 1rem;
+    }
+  }
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="header" id="header">
+    <h1>CineStream</h1>
+  </div>
+
+  <div class="search-container">
+    <input type="text" placeholder="Pesquisar filmes..." id="searchInput">
+  </div>
+
+  <div class="movies-grid" id="moviesGrid">
+    <!-- Filmes serão inseridos aqui via JavaScript -->
+  </div>
+
+  <div class="modal" id="movieModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModal" tabindex="0" role="button">&times;</span>
+      <h2 id="modalTitle"></h2>
+      <div class="embed-container" id="embedContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    const movies = [
+      {
+        title: "A Liga Extraordinária",
+        poster: "https://midias.imagemfilmes.com.br/capas/680ac54e-014b-4ac7-ad05-db4cc955ebee_m.jpg?2024-10-08T15:57:57.182879",
+        embedUrl: "https://www.example.com/embed/movie1",
+        year: "2023",
+        duration: "2h 15min"
+      },
+      {
+        title: "Luther: O Cair da Noite",
+        poster: "https://p2.trrsf.com/image/fget/cf/774/0/images.terra.com/2023/02/09/755260832-luther-o-cair-da-noite-poster-1.jpg",
+        embedUrl: "https://www.example.com/embed/movie2",
+        year: "2023",
+        duration: "1h 55min"
+      }
+    ];
+
+    let currentFocusIndex = -1;
+    const focusableElements = [];
+
+    function createMovieCard(movie) {
+      return `
+        <div class="movie-card" tabindex="0" role="button" data-embed="${movie.embedUrl}">
+          <img src="${movie.poster}" alt="${movie.title}" class="movie-poster">
+          <div class="movie-info">
+            <h3 class="movie-title">${movie.title}</h3>
+            <div class="movie-meta">
+              <span>${movie.year}</span>
+              <span>${movie.duration}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMovies(moviesList) {
+      const moviesGrid = document.getElementById('moviesGrid');
+      moviesGrid.innerHTML = moviesList.map(movie => createMovieCard(movie)).join('');
+      updateFocusableElements();
+    }
+
+    function updateFocusableElements() {
+      focusableElements.length = 0;
+      focusableElements.push(
+        document.getElementById('searchInput'),
+        ...document.querySelectorAll('.movie-card'),
+        document.getElementById('closeModal')
+      );
+    }
+
+    // Inicializar a grade de filmes
+    renderMovies(movies);
+
+    // Navegação por teclado
+    document.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('movieModal');
+      const isModalOpen = modal.style.display === 'block';
+
+      switch(e.key) {
+        case 'ArrowRight':
+          e.preventDefault();
+          if (currentFocusIndex < focusableElements.length - 1) {
+            currentFocusIndex++;
+            focusableElements[currentFocusIndex].focus();
+          }
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (currentFocusIndex > 0) {
+            currentFocusIndex--;
+            focusableElements[currentFocusIndex].focus();
+          }
+          break;
+        case 'Enter':
+          e.preventDefault();
+          document.activeElement.click();
+          break;
+        case 'Escape':
+          if (isModalOpen) {
+            closeMovieModal();
+          }
+          break;
+        case 'Backspace':
+          if (isModalOpen) {
+            closeMovieModal();
+          }
+          break;
+      }
+    });
+
+    // Funcionalidade de pesquisa com debounce
+    const searchInput = document.getElementById('searchInput');
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredMovies = movies.filter(movie => 
+          movie.title.toLowerCase().includes(searchTerm)
+        );
+        renderMovies(filteredMovies);
+      }, 300);
+    });
+
+    function closeMovieModal() {
+      const modal = document.getElementById('movieModal');
+      modal.style.display = 'none';
+      document.getElementById('embedContainer').innerHTML = '';
+      document.body.style.overflow = 'auto';
+    }
+
+    // Event Listeners
+    document.getElementById('moviesGrid').addEventListener('click', (e) => {
+      const movieCard = e.target.closest('.movie-card');
+      if (movieCard) {
+        const embedUrl = movieCard.dataset.embed;
+        const title = movieCard.querySelector('.movie-title').textContent;
+        
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('embedContainer').innerHTML = 
+          `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+        document.getElementById('movieModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        document.getElementById('closeModal').focus();
+      }
+    });
+
+    document.getElementById('closeModal').addEventListener('click', closeMovieModal);
+
+    window.addEventListener('click', (e) => {
+      if (e.target === document.getElementById('movieModal')) {
+        closeMovieModal();
+      }
+    });
+
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+  </script>
+</body></html>
